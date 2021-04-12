@@ -1,0 +1,26 @@
+<div id="top-search-wrapper" style="display: none;">
+	
+	<div class="container">
+	
+		<div class="row">
+		
+			<div class="col-md-12">
+	
+				<div class="top-search">
+					
+					<form id="search-page-form" action="/search">
+						<div id="search-wrapper">
+							<input id="search_text" name="q" type="text" size="20" onblur="if(this.value=='')this.value=this.defaultValue;" onfocus="if(this.value==this.defaultValue)this.value='';" value="{{ 'layout.header.search_box_text' | t }}"/>
+							<input id="search_submit" type="submit" border="0" value="&#xf002;" />
+						</div>
+					</form>
+				
+				</div>
+				
+			</div>
+			
+		</div>
+		
+	</div>
+
+</div>

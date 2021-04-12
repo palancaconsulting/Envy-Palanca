@@ -1,0 +1,973 @@
+<style>
+
+  {% case section.settings.logo-placement %}
+    {% when 'below-header' %}
+      #site-title{
+      	padding: {{ section.settings.logo_padding }}px;
+      }
+
+      .currency-picker--wrapper .sod_select.custom::after{
+        top: 6px;
+      }
+
+      .currency-picker--wrapper .sod_select.custom.custom{
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+
+    {% when 'within-header' %}
+      #site-title{
+        padding: {{ section.settings.logo_padding }}px;
+      }
+
+    {% when 'left' %}
+      #site-title{
+        padding: {{ section.settings.logo_padding }}px 0;
+      }
+
+  {% endcase %}
+
+    #main-navigation-wrapper{
+    	padding: {{ section.settings.menu_padding }}px 0;
+    }
+
+</style>
+
+<nav id="menu" class="mobile-menu--wrapper slideout-panel-hidden">
+	{% assign root_list = linklists[section.settings.main_linklist] %}
+	<a href="#sidr" class="slide-menu sidr-close-icon mobile-menu-close"><i class="fa fa-times" aria-hidden="true"></i></a>
+	<ul class="mobile-menu mobile-menu-main" id="mobile-menu--{{ root_list.handle }}">
+		<li class="mobile-search">
+
+			<form id="search" action="/search">
+			<div id="search-wrapper">
+				<input id="search_text" name="q" type="text" size="20" onblur="if(this.value=='')this.value=this.defaultValue;" onfocus="if(this.value==this.defaultValue)this.value='';" value="{{ 'layout.header.search_box_text' | t }}"/>
+			</div>
+			</form>
+
+		</li>
+		{% for link in root_list.links %}
+			<li>
+				<a href="{{ link.url }}">{{ link.title | escape }}</a>
+				{% if linklists[link.handle].links != blank %}
+					<a href="#" class="mobile-menu-sub mobile-menu-right mobile-menu-link" data-link="mobile-menu--{{ link.handle }}">
+						<i class="fa fa-chevron-right" aria-hidden="true"></i>
+					</a>
+				{% endif %}
+			</li>
+		{% endfor %}
+		{% if shop.customer_accounts_enabled %}
+			{% if customer %}
+				<li class="mobile-customer-link"><a href="/account">{{ 'customer.account.title' | t }}</a></li>
+				<li class="mobile-customer-link">{{ 'layout.customer.log_out' | t | customer_logout_link }}</li>
+			{% else %}
+				<li class="mobile-customer-link">{{ 'layout.customer.log_in' | t | customer_login_link }}</li>
+				{% if shop.customer_accounts_optional %}
+					<li class="mobile-customer-link">{{ 'customer.register.title' | t | customer_register_link }}</li>
+				{% endif %}
+			{% endif %}
+		{% endif %}
+
+		{% if settings.show_multiple_currencies %}
+		<li>
+			<a href="#" class="mobile-menu-link mobile-menu-sub mobile-menu-link-currency" data-link="mobile-menu-currency">{{ 'layout.cart.currency' | t }}</a>
+		</li>
+		{% endif %}
+	</ul>
+
+	{% for link in root_list.links %}
+		{% if linklists[link.handle].links != blank %}
+			<ul class="mobile-menu mobile-menu-child mobile-menu-hidden" id="mobile-menu--{{ link.handle }}">
+				<li>
+					<a href="#" class="mobile-menu-back mobile-menu-link" data-link="mobile-menu--{{ root_list.handle }}">
+						<i class="fa fa-chevron-left" aria-hidden="true"></i>
+						<div class="mobile-menu-title">{{ link.title }}</div>
+					</a>
+				</li>
+				{% for child_link in linklists[link.handle].links %}
+					<li>
+						<a href="{{ child_link.url }}">{{ child_link.title | escape }}</a>
+						{% if linklists[child_link.handle].links != blank %}
+							<a href="#" class="mobile-menu-sub mobile-menu-right mobile-menu-link" data-link="mobile-menu--{{ child_link.handle }}">
+								<i class="fa fa-chevron-right" aria-hidden="true"></i>
+							</a>
+						{% endif %}
+					</li>
+				{% endfor %}
+			</ul>
+
+			{% for child_link in linklists[link.handle].links %}
+				<ul class="mobile-menu mobile-menu-grandchild mobile-menu-hidden" id="mobile-menu--{{ child_link.handle }}">
+					<li>
+						<a href="#" class="mobile-menu-back mobile-menu-link" data-link="mobile-menu--{{ link.handle }}">
+							<i class="fa fa-chevron-left" aria-hidden="true"></i>
+							<div class="mobile-menu-title">{{ child_link.title }}</div>
+						</a>
+					</li>
+					{% for grand_child_link in linklists[child_link.handle].links %}
+						<li>{{ grand_child_link.title | link_to: grand_child_link.url }}</li>
+					{% endfor %}
+				</ul>
+			{% endfor %}
+		{% endif %}
+	{% endfor %}
+
+	{% if settings.show_multiple_currencies %}
+	<ul class="mobile-menu mobile-menu-child mobile-menu-hidden" id="mobile-menu-currency">
+		<li>
+			<a href="#" class="mobile-menu-back mobile-menu-link" data-link="mobile-menu--{{ root_list.handle }}">
+				<i class="fa fa-chevron-left" aria-hidden="true"></i>
+				<div class="mobile-menu-title">{{ 'layout.cart.currency' | t }}</div>
+			</a>
+		</li>
+		{% assign codes = 'USD,EUR,GBP,CAD,ARS,AUD,BBD,BDT,BSD,BHD,BRL,BOB,BND,BGN,ILS,MMK,KYD,CLP,CNY,COP,CRC,HRK,CZK,DKK,DOP,XCD,EGP,XPF,FJD,GHS,GTQ,GYD,GEL,HKD,HUF,ISK,INR,IDR,NIS,JMD,JPY,JOD,KZT,KES,KWD,LVL,LTL,MXN,MYR,MUR,MDL,MAD,MNT,MZN,ANG,NZD,NGN,NOK,OMR,PKR,PYG,PEN,PHP,PLN,QAR,RON,RUB,SAR,RSD,SCR,SGD,SYP,ZAR,KRW,LKR,SEK,CHF,TWD,THB,TZS,TTD,TRY,UAH,AED,UYU,VEB,VND,ZMK' | split: ',' %}
+		{% assign supported_codes = settings.supported_currencies | split: ' ' %}
+		<li>
+			{% for code in supported_codes %}
+				{% if codes contains code %}
+					<a href="#" class="mobile-menu-currency-link{% if code == shop.currency %} mobile-menu-currency-selected{% endif %}" data-code="{{ code }}">
+						{{ code }}
+					</a>
+				{% endif %}
+			{% endfor %}
+		</li>
+	</ul>
+	{% endif %}
+</nav>
+
+<div data-section-id="{{ section.id }}" data-section-type="header-section">
+
+
+<div class="container visible-xs mobile-social-icons">
+  <div class="row">
+
+  {% if section.settings.top_bar_social_media_icons %}
+
+    <ul class="mobile-social-icons-list">
+
+    {% if settings.sm_facebook_link != blank %}
+      <li id="sm-facebook">
+        <a href="{{settings.sm_facebook_link}}">
+          <i class="fa fa-facebook fa-2x"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% if settings.sm_twitter_link != blank %}
+      <li id="sm-twitter">
+        <a href="{{settings.sm_twitter_link}}">
+          <i class="fa fa-twitter fa-2x"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% if settings.sm_youtube_link != blank %}
+      <li id="sm-youtube">
+        <a href="{{settings.sm_youtube_link}}">
+          <i class="fa fa-youtube fa-2x"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% if settings.sm_flickr_link != blank %}
+      <li id="sm-flickr">
+        <a href="{{settings.sm_flickr_link}}">
+          <i class="fa fa-flickr fa-2x"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% if settings.sm_pinterest_link != blank %}
+      <li id="sm-pinterest">
+        <a href="{{settings.sm_pinterest_link}}">
+          <i class="fa fa-pinterest fa-2x"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% if settings.sm_instagram_link != blank %}
+      <li id="sm-instagram">
+        <a href="{{settings.sm_instagram_link}}">
+          <i class="fa fa-instagram fa-2x"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% if settings.sm_google_plus_link != blank %}
+      <li id="sm-google-plus">
+        <a href="{{settings.sm_google_plus_link}}">
+          <i class="fa fa-google-plus fa-2x"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% if settings.sm_snapchat_link != blank %}
+      <li id="sm-snapchat">
+        <a href="{{settings.sm_snapchat_link}}">
+          <i class="fa fa-snapchat fa-2x"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% if settings.sm_tumblr_link != blank %}
+      <li id="sm-tumblr">
+        <a href="{{settings.sm_tumblr_link}}">
+          <i class="fa fa-tumblr fa-2x"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    </ul>
+
+  {% endif %}
+
+  </div>
+</div>
+
+  <div class="container visible-xs mobile-header-wrap">
+  	<div class="row">
+  		<div class="col-xs-2">
+  			<a href="#menu" class="slide-menu slide-menu-mobile">
+  				<i id="iconAnim" class="fa fa-bars fa-2x"></i>
+  			</a>
+  		</div>
+
+  		<div class="col-xs-8">
+
+  			<div class="site-header__logo h1" id="site-title" itemscope itemtype="http://schema.org/Organization">
+  				  {% if section.settings.logo %}
+  				    <a href="/" itemprop="url" class="site-header__logo-image">
+  				      {% capture image_size %}{{ section.settings.logo_max_width }}x{% endcapture %}
+  				      <img src="{{ section.settings.logo | img_url: image_size }}"
+  				           alt="{{ section.settings.logo.alt | default: shop.name }}"
+  				           itemprop="logo">
+  				    </a>
+  				  {% else %}
+  				    <a class="site-header__logo-link custom-font" href="/" itemprop="url">{{ shop.name }}</a>
+  				  {% endif %}
+  			</div>
+
+  		</div>
+
+  		<div class="col-xs-2 mobile-header-right">
+  			<a href="/cart" class="slide-menu slide-menu-cart">
+  				<i class="fa fa-shopping-cart fa-2x"></i>
+  			</a>
+  		</div>
+  	</div>
+  </div>
+
+	<header id="site-header" class="clearfix custom-font hidden-xs">
+
+  	<div class="container-fluid">
+
+  		<div class="row">
+
+      {% case section.settings.logo-placement %}
+
+        {% when 'below-header' %}
+
+        {% if section.settings.top_bar_linklist != empty %}
+
+          <div class="col-md-6 {% if section.settings.top_bar_linklist != empty %}col-sm-12{% else %}hidden-sm{% endif %}">
+
+          <nav class="navbar" role="navigation">
+
+            <div>
+              <ul class="nav navbar-nav">
+                  {% for link in linklists[section.settings.top_bar_linklist].links %}
+                {% assign child_list_handle = link.title | handleize %}
+                {% if linklists[child_list_handle].links != blank %}
+                  <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                      <span class="nav-label">{{ link.title | escape }}</span><span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                      {% for child_link in linklists[child_list_handle].links %}
+                        {% assign grand_child_list_handle = child_link.title | handle %}
+                        {% if linklists[grand_child_list_handle] and linklists[grand_child_list_handle].links.size > 0 %}
+                          <li class="dropdown-submenu"><a href="{{ child_link.url }}">{{ child_link.title | escape }}</a>
+                            <ul class="dropdown-menu">
+                              {% for grand_child_link in linklists[grand_child_list_handle].links %}
+                                <li>{{ grand_child_link.title | link_to: grand_child_link.url }}</li>
+                              {% endfor %}
+                            </ul>
+                          </li>
+                        {% else %}
+                          <li>{{ child_link.title | link_to: child_link.url }}</li>
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  </li>
+                {% else %}
+                  <li {% if link.active %}class="site-nav--active"{% endif %}>
+                  <a href="{{ link.url }}">{{ link.title }}</a>
+                  </li>
+                {% endif %}
+                  {% endfor %}
+
+                </ul>
+            </div>
+
+          </nav>
+
+        </div>
+
+        {% endif %}
+
+        {% if section.settings.top_bar_linklist != empty %}
+          <div class="col-md-6 col-sm-12">
+        {% else %}
+          <div class="col-md-12 col-sm-12">
+        {% endif %}
+  				<div id="cart-brief">
+  					<ul class="cart-link">
+
+
+            {% if section.settings.top_bar_social_media_icons %}
+
+              {% if settings.sm_facebook_link != blank %}
+                <li id="sm-facebook">
+                  <a href="{{settings.sm_facebook_link}}">
+                    <i class="fa fa-facebook fa-2x"></i>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if settings.sm_twitter_link != blank %}
+                <li id="sm-twitter">
+                  <a href="{{settings.sm_twitter_link}}">
+                    <i class="fa fa-twitter fa-2x"></i>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if settings.sm_youtube_link != blank %}
+                <li id="sm-youtube">
+                  <a href="{{settings.sm_youtube_link}}">
+                    <i class="fa fa-youtube fa-2x"></i>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if settings.sm_flickr_link != blank %}
+                <li id="sm-flickr">
+                  <a href="{{settings.sm_flickr_link}}">
+                    <i class="fa fa-flickr fa-2x"></i>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if settings.sm_pinterest_link != blank %}
+                <li id="sm-pinterest">
+                  <a href="{{settings.sm_pinterest_link}}">
+                    <i class="fa fa-pinterest fa-2x"></i>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if settings.sm_instagram_link != blank %}
+                <li id="sm-instagram">
+                  <a href="{{settings.sm_instagram_link}}">
+                    <i class="fa fa-instagram fa-2x"></i>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if settings.sm_google_plus_link != blank %}
+                <li id="sm-google-plus">
+                  <a href="{{settings.sm_google_plus_link}}">
+                    <i class="fa fa-google-plus fa-2x"></i>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if settings.sm_snapchat_link != blank %}
+                <li id="sm-snapchat">
+                  <a href="{{settings.sm_snapchat_link}}">
+                    <i class="fa fa-snapchat fa-2x"></i>
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if settings.sm_tumblr_link != blank %}
+                <li id="sm-tumblr">
+                  <a href="{{settings.sm_tumblr_link}}">
+                    <i class="fa fa-tumblr fa-2x"></i>
+                  </a>
+                </li>
+              {% endif %}
+
+              <li class="social-media-icons-header-spacer">&nbsp;</li>
+
+            {% endif %}
+
+  					{% if settings.show_multiple_currencies %}
+  						<li class="currency-picker--wrapper">
+
+  						  <select class="currency-picker sod_select" name="currencies" id="custom" style="visibility: hidden">
+  						  {% assign codes = 'USD,EUR,GBP,CAD,ARS,AUD,BBD,BDT,BSD,BHD,BRL,BOB,BND,BGN,ILS,MMK,KYD,CLP,CNY,COP,CRC,HRK,CZK,DKK,DOP,XCD,EGP,XPF,FJD,GHS,GTQ,GYD,GEL,HKD,HUF,ISK,INR,IDR,NIS,JMD,JPY,JOD,KZT,KES,KWD,LVL,LTL,MXN,MYR,MUR,MDL,MAD,MNT,MZN,ANG,NZD,NGN,NOK,OMR,PKR,PYG,PEN,PHP,PLN,QAR,RON,RUB,SAR,RSD,SCR,SGD,SYP,ZAR,KRW,LKR,SEK,CHF,TWD,THB,TZS,TTD,TRY,UAH,AED,UYU,VEB,VND,ZMK' | split: ',' %}
+  						  {% assign supported_codes = settings.supported_currencies | split: ' ' %}
+  						  <option value="{{ shop.currency }}" selected="selected">{{ shop.currency }}</option>
+  						  {% for code in supported_codes %}
+  						    {% if code != shop.currency and codes contains code %}
+  						    <option value="{{ code }}">{{ code }}</option>
+  						    {% endif %}
+  						  {% endfor %}
+  						  </select>
+
+  						</li>
+  					{% endif %}
+
+  					<li>
+  						<a href="#" class="search-show" title="{{ 'layout.header.search_box_text' | t }}">
+  							<i class="fa fa-search fa-2x"></i>
+  						</a>
+  					</li>
+
+  						{% if shop.customer_accounts_enabled %}
+  							{% if customer %}
+  								<li>
+  									<a href="/account" title="{{ 'layout.customer.account' | t }}">
+  										<i class="fa fa-user fa-2x"></i>
+  									</a>
+  								</li>
+  							{% else %}
+  								<li>
+  									<a href="/account/login" title="{{ 'layout.customer.log_in' | t }}">
+  										<i class="fa fa-user fa-2x"></i>
+  									</a>
+  								</li>
+  							{% endif %}
+  						{% endif %}
+  				         <li><a class="custom-font slide-menu slide-menu-cart" title="{{ 'layout.header.your_cart' | t }}"><i class="fa fa-shopping-cart fa-2x"></i></a></li>
+  					</ul>
+  				</div>
+
+        {% when 'within-header' %}
+
+        <div class="logo-placement-within-wrapper">
+
+          <div class="col-md-4 col-sm-12 logo-placement-within-wrapper--indiv">
+
+          <nav class="navbar" role="navigation">
+
+          {% if section.settings.top_bar_linklist != empty %}
+
+            <div>
+              <ul class="nav navbar-nav">
+                  {% for link in linklists[section.settings.top_bar_linklist].links %}
+                {% assign child_list_handle = link.title | handleize %}
+                {% if linklists[child_list_handle].links != blank %}
+                  <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                      <span class="nav-label">{{ link.title | escape }}</span><span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                      {% for child_link in linklists[child_list_handle].links %}
+                        {% assign grand_child_list_handle = child_link.title | handle %}
+                        {% if linklists[grand_child_list_handle] and linklists[grand_child_list_handle].links.size > 0 %}
+                          <li class="dropdown-submenu"><a href="{{ child_link.url }}">{{ child_link.title | escape }}</a>
+                            <ul class="dropdown-menu">
+                              {% for grand_child_link in linklists[grand_child_list_handle].links %}
+                                <li>{{ grand_child_link.title | link_to: grand_child_link.url }}</li>
+                              {% endfor %}
+                            </ul>
+                          </li>
+                        {% else %}
+                          <li>{{ child_link.title | link_to: child_link.url }}</li>
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  </li>
+                {% else %}
+                  <li {% if link.active %}class="site-nav--active"{% endif %}>
+                  <a href="{{ link.url }}">{{ link.title }}</a>
+                  </li>
+                {% endif %}
+                  {% endfor %}
+
+                </ul>
+            </div>
+
+            {% endif %}
+
+            </nav>
+
+          </div>
+
+            <div class="col-md-4 col-sm-12 logo-placement-within-wrapper--indiv">
+    					  <div class="site-header__logo h1" id="site-title" itemscope itemtype="http://schema.org/Organization">
+    						  {% if section.settings.logo %}
+    						    <a href="/" itemprop="url" class="site-header__logo-image">
+    						      {% capture image_size %}{{ section.settings.logo_max_width }}x{% endcapture %}
+    						      <img src="{{ section.settings.logo | img_url: image_size }}"
+    						           alt="{{ section.settings.logo.alt | default: shop.name }}"
+    						           itemprop="logo">
+    						    </a>
+    						  {% else %}
+    						    <a class="site-header__logo-link custom-font" href="/" itemprop="url">{{ shop.name }}</a>
+    						  {% endif %}
+    					  </div>
+    				</div>
+
+        <div class="col-md-4 col-sm-12 logo-placement-within-wrapper--indiv">
+
+  				<div id="cart-brief">
+  					<ul class="cart-link">
+
+            {% if section.settings.top_bar_social_media_icons %}
+
+              {% if settings.sm_facebook_link != blank %}
+                <li id="sm-facebook"><a href="{{settings.sm_facebook_link}}"><i class="fa fa-facebook fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_twitter_link != blank %}
+                <li id="sm-twitter"><a href="{{settings.sm_twitter_link}}"><i class="fa fa-twitter fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_youtube_link != blank %}
+                <li id="sm-youtube"><a href="{{settings.sm_youtube_link}}"><i class="fa fa-youtube fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_flickr_link != blank %}
+                <li id="sm-flickr"><a href="{{settings.sm_flickr_link}}"><i class="fa fa-flickr fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_pinterest_link != blank %}
+                <li id="sm-pinterest"><a href="{{settings.sm_pinterest_link}}"><i class="fa fa-pinterest fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_instagram_link != blank %}
+                <li id="sm-instagram"><a href="{{settings.sm_instagram_link}}"><i class="fa fa-instagram fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_google_plus_link != blank %}
+                <li id="sm-google-plus"><a href="{{settings.sm_google_plus_link}}"><i class="fa fa-google-plus fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_snapchat_link != blank %}
+                <li id="sm-snapchat"><a href="{{settings.sm_snapchat_link}}"><i class="fa fa-snapchat fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_tumblr_link != blank %}
+                <li id="sm-tumblr"><a href="{{settings.sm_tumblr_link}}"><i class="fa fa-tumblr fa-2x"></i></a></li>
+              {% endif %}
+
+              <li class="social-media-icons-header-spacer">&nbsp;</li>
+
+            {% endif %}
+
+
+  					{% if settings.show_multiple_currencies %}
+  						<li class="currency-picker--wrapper">
+
+  						  <select class="currency-picker sod_select" name="currencies" id="custom" style="visibility: hidden">
+  						  {% assign codes = 'USD,EUR,GBP,CAD,ARS,AUD,BBD,BDT,BSD,BHD,BRL,BOB,BND,BGN,ILS,MMK,KYD,CLP,CNY,COP,CRC,HRK,CZK,DKK,DOP,XCD,EGP,XPF,FJD,GHS,GTQ,GYD,GEL,HKD,HUF,ISK,INR,IDR,NIS,JMD,JPY,JOD,KZT,KES,KWD,LVL,LTL,MXN,MYR,MUR,MDL,MAD,MNT,MZN,ANG,NZD,NGN,NOK,OMR,PKR,PYG,PEN,PHP,PLN,QAR,RON,RUB,SAR,RSD,SCR,SGD,SYP,ZAR,KRW,LKR,SEK,CHF,TWD,THB,TZS,TTD,TRY,UAH,AED,UYU,VEB,VND,ZMK' | split: ',' %}
+  						  {% assign supported_codes = settings.supported_currencies | split: ' ' %}
+  						  <option value="{{ shop.currency }}" selected="selected">{{ shop.currency }}</option>
+  						  {% for code in supported_codes %}
+  						    {% if code != shop.currency and codes contains code %}
+  						    <option value="{{ code }}">{{ code }}</option>
+  						    {% endif %}
+  						  {% endfor %}
+  						  </select>
+
+  						</li>
+  					{% endif %}
+
+  					<li>
+  						<a href="#" class="search-show" title="{{ 'layout.header.search_box_text' | t }}">
+  							<i class="fa fa-search fa-2x"></i>
+  						</a>
+  					</li>
+
+  						{% if shop.customer_accounts_enabled %}
+  							{% if customer %}
+  								<li>
+  									<a href="/account" title="{{ 'layout.customer.account' | t }}">
+  										<i class="fa fa-user fa-2x"></i>
+  									</a>
+  								</li>
+  							{% else %}
+  								<li>
+  									<a href="/account/login" title="{{ 'layout.customer.log_in' | t }}">
+  										<i class="fa fa-user fa-2x"></i>
+  									</a>
+  								</li>
+  							{% endif %}
+  						{% endif %}
+  				         <li><a class="custom-font slide-menu slide-menu-cart" title="{{ 'layout.header.your_cart' | t }}"><i class="fa fa-shopping-cart fa-2x"></i></a></li>
+  					</ul>
+  				</div>
+
+          </div>
+
+          {% when 'left' %}
+
+          <div class="col-md-8 {% if section.settings.top_bar_linklist != empty %}col-sm-12{% else %}hidden-sm{% endif %}">
+
+          <nav class="navbar" role="navigation">
+
+          {% if section.settings.top_bar_linklist != empty %}
+
+            <div>
+              <ul class="nav navbar-nav">
+                  {% for link in linklists[section.settings.top_bar_linklist].links %}
+                {% assign child_list_handle = link.title | handleize %}
+                {% if linklists[child_list_handle].links != blank %}
+                  <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                      <span class="nav-label">{{ link.title | escape }}</span><span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                      {% for child_link in linklists[child_list_handle].links %}
+                        {% assign grand_child_list_handle = child_link.title | handle %}
+                        {% if linklists[grand_child_list_handle] and linklists[grand_child_list_handle].links.size > 0 %}
+                          <li class="dropdown-submenu"><a href="{{ child_link.url }}">{{ child_link.title | escape }}</a>
+                            <ul class="dropdown-menu">
+                              {% for grand_child_link in linklists[grand_child_list_handle].links %}
+                                <li>{{ grand_child_link.title | link_to: grand_child_link.url }}</li>
+                              {% endfor %}
+                            </ul>
+                          </li>
+                        {% else %}
+                          <li>{{ child_link.title | link_to: child_link.url }}</li>
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  </li>
+                {% else %}
+                  <li {% if link.active %}class="site-nav--active"{% endif %}>
+                  <a href="{{ link.url }}">{{ link.title }}</a>
+                  </li>
+                {% endif %}
+                  {% endfor %}
+
+                </ul>
+            </div>
+
+          {% endif %}
+
+          </nav>
+
+        </div>
+
+        <div class="col-md-4 col-sm-12">
+
+  				<div id="cart-brief">
+  					<ul class="cart-link">
+
+            {% if section.settings.top_bar_social_media_icons %}
+
+              {% if settings.sm_facebook_link != blank %}
+                <li id="sm-facebook"><a href="{{settings.sm_facebook_link}}"><i class="fa fa-facebook fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_twitter_link != blank %}
+                <li id="sm-twitter"><a href="{{settings.sm_twitter_link}}"><i class="fa fa-twitter fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_youtube_link != blank %}
+                <li id="sm-youtube"><a href="{{settings.sm_youtube_link}}"><i class="fa fa-youtube fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_flickr_link != blank %}
+                <li id="sm-flickr"><a href="{{settings.sm_flickr_link}}"><i class="fa fa-flickr fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_pinterest_link != blank %}
+                <li id="sm-pinterest"><a href="{{settings.sm_pinterest_link}}"><i class="fa fa-pinterest fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_instagram_link != blank %}
+                <li id="sm-instagram"><a href="{{settings.sm_instagram_link}}"><i class="fa fa-instagram fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_google_plus_link != blank %}
+                <li id="sm-google-plus"><a href="{{settings.sm_google_plus_link}}"><i class="fa fa-google-plus fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_snapchat_link != blank %}
+                <li id="sm-snapchat"><a href="{{settings.sm_snapchat_link}}"><i class="fa fa-snapchat fa-2x"></i></a></li>
+              {% endif %}
+
+              {% if settings.sm_tumblr_link != blank %}
+                <li id="sm-tumblr"><a href="{{settings.sm_tumblr_link}}"><i class="fa fa-tumblr fa-2x"></i></a></li>
+              {% endif %}
+
+              <li class="social-media-icons-header-spacer">&nbsp;</li>
+
+            {% endif %}
+
+  					{% if settings.show_multiple_currencies %}
+  						<li class="currency-picker--wrapper">
+
+  						  <select class="currency-picker sod_select" name="currencies" id="custom" style="visibility: hidden">
+  						  {% assign codes = 'USD,EUR,GBP,CAD,ARS,AUD,BBD,BDT,BSD,BHD,BRL,BOB,BND,BGN,ILS,MMK,KYD,CLP,CNY,COP,CRC,HRK,CZK,DKK,DOP,XCD,EGP,XPF,FJD,GHS,GTQ,GYD,GEL,HKD,HUF,ISK,INR,IDR,NIS,JMD,JPY,JOD,KZT,KES,KWD,LVL,LTL,MXN,MYR,MUR,MDL,MAD,MNT,MZN,ANG,NZD,NGN,NOK,OMR,PKR,PYG,PEN,PHP,PLN,QAR,RON,RUB,SAR,RSD,SCR,SGD,SYP,ZAR,KRW,LKR,SEK,CHF,TWD,THB,TZS,TTD,TRY,UAH,AED,UYU,VEB,VND,ZMK' | split: ',' %}
+  						  {% assign supported_codes = settings.supported_currencies | split: ' ' %}
+  						  <option value="{{ shop.currency }}" selected="selected">{{ shop.currency }}</option>
+  						  {% for code in supported_codes %}
+  						    {% if code != shop.currency and codes contains code %}
+  						    <option value="{{ code }}">{{ code }}</option>
+  						    {% endif %}
+  						  {% endfor %}
+  						  </select>
+
+  						</li>
+  					{% endif %}
+
+  					<li>
+  						<a href="#" class="search-show" title="{{ 'layout.header.search_box_text' | t }}">
+  							<i class="fa fa-search fa-2x"></i>
+  						</a>
+  					</li>
+
+  						{% if shop.customer_accounts_enabled %}
+  							{% if customer %}
+  								<li>
+  									<a href="/account" title="{{ 'layout.customer.account' | t }}">
+  										<i class="fa fa-user fa-2x"></i>
+  									</a>
+  								</li>
+  							{% else %}
+  								<li>
+  									<a href="/account/login" title="{{ 'layout.customer.log_in' | t }}">
+  										<i class="fa fa-user fa-2x"></i>
+  									</a>
+  								</li>
+  							{% endif %}
+  						{% endif %}
+  				         <li><a class="custom-font slide-menu slide-menu-cart" title="{{ 'layout.header.your_cart' | t }}"><i class="fa fa-shopping-cart fa-2x"></i></a></li>
+  					</ul>
+  				</div>
+
+          </div>
+
+      {% endcase %}
+
+  			</div>
+
+  		</div>
+
+  	</div>
+
+	</header>
+
+	<div class="container-fluid{% if section.settings.logo-placement == 'left' %} menu-left-bottom-border{% endif %}" id="page-layout">
+
+    {% if section.settings.logo-placement == 'left' %}
+    <div class="logo-placement-left-wrapper hidden-xs">
+
+      <div class="col-md-4 col-md-12 logo-placement-left-wrapper--indiv">
+          <div class="site-header__logo h1 logo-placement-left" id="site-title" itemscope itemtype="http://schema.org/Organization">
+            {% if section.settings.logo %}
+              <a href="/" itemprop="url" class="site-header__logo-image">
+                {% capture image_size %}{{ section.settings.logo_max_width }}x{% endcapture %}
+                <img src="{{ section.settings.logo | img_url: image_size }}"
+                     alt="{{ section.settings.logo.alt | default: shop.name }}"
+                     itemprop="logo">
+              </a>
+            {% else %}
+              <a class="site-header__logo-link custom-font" href="/" itemprop="url">{{ shop.name }}</a>
+            {% endif %}
+          </div>
+      </div>
+
+
+        <div class="col-md-8 logo-placement-left-wrapper--indiv">
+
+        <div class="main-navigation-wrapper-main">
+          <div id="main-navigation-wrapper" class="custom-font">
+            <ul class="nav nav-pills">
+            {% for link in linklists[section.settings.main_linklist].links %}
+              {% assign child_list_handle = link.title | handleize %}
+              {% if linklists[child_list_handle].links != blank %}
+                <li class="dropdown pull-right">
+                  <a class="dropdown-toggle{% if section.settings.main-menu-hover %} dropdown-envy-toggle{% endif %}" data-delay="200" data-toggle="dropdown" href="#">
+                    <span class="nav-label">{{ link.title | escape }}</span><span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+                    {% for child_link in linklists[child_list_handle].links %}
+                      {% assign grand_child_list_handle = child_link.title | handle %}
+                      {% if linklists[grand_child_list_handle] and linklists[grand_child_list_handle].links.size > 0 %}
+                        <li class="dropdown-submenu"><a href="{{ child_link.url }}">{{ child_link.title | escape }}</a>
+                          <ul class="dropdown-menu">
+                            {% for grand_child_link in linklists[grand_child_list_handle].links %}
+                              <li>{{ grand_child_link.title | link_to: grand_child_link.url }}</li>
+                            {% endfor %}
+                          </ul>
+                        </li>
+                      {% else %}
+                        <li>{{ child_link.title | link_to: child_link.url }}</li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% else %}
+                <li {% if link.active %}class="site-nav--active"{% endif %}>
+                <a href="{{ link.url }}">{{ link.title }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            </ul>
+          </div>
+
+        </div>
+
+        </div>
+
+      {% endif %}
+
+    	{% if section.settings.logo-placement == 'below-header' %}
+    		<div class="row hidden-xs">
+    			  <div class="site-header__logo h1" id="site-title" itemscope itemtype="http://schema.org/Organization">
+    				  {% if section.settings.logo %}
+    				    <a href="/" itemprop="url" class="site-header__logo-image">
+    				      {% capture image_size %}{{ section.settings.logo_max_width }}x{% endcapture %}
+    				      <img src="{{ section.settings.logo | img_url: image_size }}"
+    				           alt="{{ section.settings.logo.alt | default: shop.name }}"
+    				           itemprop="logo">
+    				    </a>
+    				  {% else %}
+    				    <a class="site-header__logo-link custom-font" href="/" itemprop="url">{{ shop.name }}</a>
+    				  {% endif %}
+    			  </div>
+    		</div>
+    		{% endif %}
+
+      {% if section.settings.logo-placement != 'left' %}
+    		{% if section.settings.main_linklist != '' %}
+    			<div class="row hidden-xs">
+    				<div class="main-navigation-wrapper-main">
+    					<div id="main-navigation-wrapper" class="custom-font">
+    						<ul class="nav nav-pills">
+    						{% for link in linklists[section.settings.main_linklist].links %}
+    							{% assign child_list_handle = link.title | handleize %}
+    							{% if linklists[child_list_handle].links != blank %}
+    								<li class="dropdown">
+    									<a class="dropdown-toggle{% if section.settings.main-menu-hover %} dropdown-envy-toggle{% endif %}" data-toggle="dropdown" data-delay="200" href="#">
+    										<span class="nav-label">{{ link.title | escape }}</span><span class="caret"></span>
+    									</a>
+    									<ul class="dropdown-menu">
+    										{% for child_link in linklists[child_list_handle].links %}
+    											{% assign grand_child_list_handle = child_link.title | handle %}
+    											{% if linklists[grand_child_list_handle] and linklists[grand_child_list_handle].links.size > 0 %}
+    												<li class="dropdown-submenu"><a href="{{ child_link.url }}">{{ child_link.title | escape }}</a>
+    													<ul class="dropdown-menu">
+    														{% for grand_child_link in linklists[grand_child_list_handle].links %}
+    															<li>{{ grand_child_link.title | link_to: grand_child_link.url }}</li>
+    														{% endfor %}
+    													</ul>
+    												</li>
+    											{% else %}
+    												<li>{{ child_link.title | link_to: child_link.url }}</li>
+    											{% endif %}
+    										{% endfor %}
+    									</ul>
+    								</li>
+    							{% else %}
+    								<li {% if link.active %}class="site-nav--active"{% endif %}>
+    								<a href="{{ link.url }}">{{ link.title }}</a>
+    								</li>
+    							{% endif %}
+    						{% endfor %}
+    						</ul>
+    					</div>
+    				</div>
+    			</div>
+    		{% endif %}
+    {% endif %}
+
+</div>
+
+	</div>
+
+
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    {
+        "type":      "header",
+        "content":   "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "logo_max_width",
+      "label": "Width (in pixels)",
+      "default": "300"
+    },
+    {
+      "type": "text",
+      "id": "logo_padding",
+      "label": "Padding around logo (in pixels)",
+      "default": "40"
+    },
+    {
+      "type": "select",
+      "id": "logo-placement",
+      "label": "Placement",
+      "options": [
+        {
+          "value": "below-header",
+          "label": "Below header"
+        },
+        {
+          "value": "within-header",
+          "label": "Within header"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "below-header"
+    },
+    {
+      "type": "header",
+      "content": "Top bar"
+    },
+    {
+      "type": "link_list",
+      "id": "top_bar_linklist",
+      "label": "Menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "top_bar_social_media_icons",
+      "label": "Show social media icons",
+      "default": true,
+      "info": "Edit your social settings and accounts in General settings"
+    },
+    {
+      "type": "header",
+      "content": "Main menu"
+    },
+    {
+      "type": "link_list",
+      "id": "main_linklist",
+      "label": "Menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "main-menu-hover",
+      "label": "Dropdown on hover",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "menu_padding",
+      "label": "Padding around 'main menu' (in pixels)",
+      "default": "10"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,111 @@
+{% if settings.popup--enable %}
+
+<div id="popup">
+
+  <div class="container">
+    <div class="row">
+       <div class="col-md-12">
+          <div class="popup--inner">
+
+    <input type="hidden" id="pop-up-time" value="{{ settings.pop-up-time }}" />
+	<div class="container-fluid">
+
+		<a class="popup--close-btn">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-times fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+
+		<div class="row">
+
+			{%- assign img_url = '' -%}
+
+			{% if settings.popup-newsletter-top != blank %}
+				{%- assign img_url = settings.popup-newsletter-top | img_url: '1000x' -%}
+			{% else %}
+				{%- assign img_url = '' -%}
+			{% endif %}
+
+			<div class="{% if settings.popup-newsletter-top != blank %}col-md-6 col-sm-6 col-xs-10{% else %}col-md-12 col-sm-12 col-xs-12 popup--no-image-text-wrapper{% endif %}">
+				<div class="popup--body">
+					{% if settings.pop-up-text-header-text != empty %}
+						<span class="popup--subheader">{{ settings.pop-up-text-header-text }}</span>
+					{% endif %}
+					{% if settings.pop-up-text-description-text != empty %}
+						<div class="popup--main-text custom-font">{{ settings.pop-up-text-description-text }}</div>
+					{% endif %}
+					{% if settings.popup--show-newsletter %}
+						<div id="subs-container" class="clearfix">
+							<div id="mc_embed_signup">
+
+								{% form 'customer' %}
+								  {{ form.errors | default_errors }}
+								  {% if form.posted_successfully? %}
+								    <p class="note form-success"><strong>{{ 'general.newsletter_form.thanks' | t }}</strong></p>
+								  {% else %}
+								    <input type="hidden" name="contact[tags]" value="newsletter">
+								    <div id="newsletter-wrapper">
+								      <input id="newsletter_text" type="email" value="{% if customer %}{{ customer.email }}{% endif %}" placeholder="{{ 'general.newsletter_form.newsletter_text' | t }}" name="contact[email]" id="Email" class="input-group-field email" aria-label="{{ 'general.newsletter_form.newsletter_email' | t }}" autocorrect="off" autocapitalize="off">
+								      <input type="submit" id="newsletter_submit" class="btn btn-default" name="commit" id="subscribe" value="&#xf054;">
+								    </div>
+								  {% endif %}
+								{% endform %}
+
+							</div>
+						</div>
+					{% endif %}
+
+					{% if settings.popup--show-social-icons %}
+						{% include 'social-links' %}
+					{% endif %}
+				</div>
+			</div>
+
+      {% if settings.popup-newsletter-top != blank %}
+      <div class="col-md-5 col-sm-5 col-md-offset-1 col-sm-offset-1 hidden-xs popup--image-wrapper" style="background-image:url('{{ img_url }}');">&nbsp;</div>
+      {% endif %}
+
+		</div>
+
+  </div>
+
+</div>
+
+</div>
+
+</div>
+
+	</div>
+
+</div>
+
+{% endif %}
+
+<script type="text/javascript">
+	window.addEventListener('load', function() {
+		var show_popup = false;
+		var pop_up_time = $('#pop-up-time').val();
+		var popup_enabled = pop_up_time !== undefined;
+		var has_popup_cookie = $.cookie('popup-cookie') === 'true';
+
+		if (!popup_enabled) {
+			// popup is disabled
+			return;
+		} else if (pop_up_time === '0') {
+			// popup is shown every time
+			show_popup = true;
+		} else if (!has_popup_cookie) {
+			// popup cookie is not set, show popup this time
+			show_popup = true;
+			$.cookie('popup-cookie', 'true', {expires: parseInt(pop_up_time)});
+		}
+		if (show_popup) {
+			document.querySelector('#popup').classList.add('visible');
+		}
+
+		$('.popup--close-btn').on('click', function () {
+			document.querySelector('#popup').classList.remove('visible');
+		});
+	});
+</script>

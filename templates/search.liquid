@@ -1,0 +1,99 @@
+{% paginate search.results by 12 %}
+	<section id="search_results" class="collection">
+		<header>
+		
+
+		
+			{% if search.performed %}	
+				<div class="title-bar custom-font">	   
+				<h2>{{ 'general.search.search_results' | t }}</h2>
+				</div>
+				
+				<form id="search-page-form" action="/search">
+					<div id="search-wrapper">
+						<input id="search_text" name="q" type="text" size="20" onblur="if(this.value=='')this.value=this.defaultValue;" onfocus="if(this.value==this.defaultValue)this.value='';" value="{{ search.terms | escape }}"/>
+						<input id="search_submit" type="submit" border="0" value="&#xf002;" />
+					</div>
+				</form>
+			{% else %}	
+				<form id="search-page-form" action="/search">
+					<div id="search-wrapper">
+						<input id="search_text" name="q" type="text" size="20" onblur="if(this.value=='')this.value=this.defaultValue;" onfocus="if(this.value==this.defaultValue)this.value='';" value="{{ 'general.search.title' | t }}"/>
+						<input id="search_submit" type="submit" border="0" value="&#xf002;" />
+					</div>
+				</form>
+			{% endif %}
+			
+		</header>
+
+		{% if search.results_count > 0 %}
+		<div class="row">
+		<ul class="results-grid">
+			{% for item in search.results %}
+				<li class="{% if item.featured_image %}product{% else %}page{% endif %} col-md-3 col-sm-3{% cycle ' alpha clearcolumn', '', '', ' omega' %}">
+  					<div class="indiv-product">
+						{% if item.object_type == 'article' %}
+						
+						<div class="search-article-image">
+							{% if item.image %}
+								<img src="{{ item.image | img_url: '1024x1024' }}" class="img-responsive" />
+							{% endif %}
+						</div>
+						
+						<a href="{{item.url}}">
+							<h3>{{ item.title }}</h3>
+							<p>{{ item.content | strip_html | truncatewords: 20 | highlight: search.terms }}</p>
+						</a>
+						
+						{% elsif item.object_type == 'page' %}
+						
+						<a href="{{item.url}}">
+							<h3>{{ item.title }}</h3>
+							<p>{{ item.content | strip_html | truncatewords: 20 | highlight: search.terms }}</p>
+						</a>
+						
+						{% else %}
+						
+						<a href="{{item.url}}">
+							{% if item.featured_image %}
+								<img src="{{ item.featured_image | product_img_url: 'large'}}" alt="{{ item.description | strip_html | truncate: 75 }}" class="img-responsive" />
+							{% endif %}
+						</a>
+						<a href="{{item.url}}">
+							<h3>{{ item.title }}</h3>
+							<p>{{ item.content | strip_html | truncatewords: 20 | highlight: search.terms }}</p>
+						</a>
+  					
+  						{% endif %}
+
+					
+					</div>
+					
+						{% if item.compare_at_price_max > item.price %}
+						<div class="sale-badge">{{ 'products.general.sale' | t }}</div>
+					{% endif %}
+					
+				</li>
+			{% endfor %}	
+		</ul>
+		</div>
+		{% else %}
+		
+		{% if search.performed %}
+			{% if search.terms != empty %}
+				<h3 class="no-results">{{ 'general.search.no_results_html' | t: terms: search.terms  }}</h3>
+			{% else %}
+				<h3 class="no-results">{{ 'general.search.first_search' | t }}</h3>
+			{% endif %}
+		{% endif %}
+		
+		
+		
+		
+			
+		{% endif %}
+		{% if search.results_count > 12 %}
+        {% include 'pagination' %}
+		{% endif %}
+	</section>
+{% endpaginate %}

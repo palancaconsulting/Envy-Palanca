@@ -1,0 +1,242 @@
+{% case section.blocks.size %}
+{% when 1 %}
+	{% assign footer_item_width = 'col-md-12 col-sm-12' %}
+{% when 2 %}
+	{% assign footer_item_width = 'col-md-6 col-sm-6' %}
+{% when 3 %}
+	{% assign footer_item_width = 'col-md-4 col-sm-4' %}
+{% when 4 %}
+	{% assign footer_item_width = 'col-md-3 col-sm-6' %}
+{% endcase %}
+
+<footer>
+	<div class="container">
+		<div class="row">
+
+			{% for block in section.blocks %}
+
+				{% case block.type %}
+
+					{% when 'menu' %}
+
+						{%- assign footer_linklist = block.settings.footer_linklist -%}
+						{% if linklists[footer_linklist].links.size > 0 %}
+							<div class="{{ footer_item_width }} links-footer">
+								<h3>{{ block.settings.menu_title }}</h3>
+								<ul>
+									{% for link in linklists[footer_linklist].links %}
+										<li {% if link.object.tags and link.object.tags.size > 0 %} class="children"{% endif %}>
+											<a href="{{link.url}}">{{link.title}}</a>
+										</li>
+									{% endfor %}
+								</ul>
+							</div>
+						{% endif %}
+
+					{% when 'text' %}
+
+						<div class="{{ footer_item_width }} content-footer">
+							<h3>{{ block.settings.title }}</h3>
+							<div class="rte footer-article">{{ block.settings.richtext }}</div>
+						</div>
+
+					{% when 'newsletter' %}
+
+						<div class="{{ footer_item_width }} mailing-list-footer">
+							<h3>{{ 'general.newsletter_form.header' | t }}</h3>
+							{% if block.settings.footer_newsletter_description != empty %}
+								<div class="rte">{{ block.settings.footer_newsletter_description }}</div>
+							{% endif %}
+
+							{% form 'customer' %}
+							  {{ form.errors | default_errors }}
+							  {% if form.posted_successfully? %}
+							    <p class="note form-success">{{ 'general.newsletter_form.thanks' | t }}</p>
+							  {% else %}
+							    <input type="hidden" name="contact[tags]" value="newsletter">
+							    <div id="newsletter-wrapper">
+							      <input id="newsletter_text" type="email" value="{% if customer %}{{ customer.email }}{% endif %}" placeholder="{{ 'general.newsletter_form.newsletter_text' | t }}" name="contact[email]" class="input-group-field email" aria-label="{{ 'general.newsletter_form.newsletter_email' | t }}" autocorrect="off" autocapitalize="off">
+							        <input id="newsletter_submit" type="submit" class="btn btn-default" name="subscribe" value="&#xf054;">
+							    </div>
+							  {% endif %}
+							{% endform %}
+
+
+						</div>
+
+					{% when 'social' %}
+
+						<div class="{{ footer_item_width }}">
+							<h3>{{ 'layout.footer.social_title' | t }}</h3>
+							<div id="footer-right">
+								<ul id="sm-icons" class="clearfix">
+
+									{% if settings.sm_facebook_link != blank %}
+										<li id="sm-facebook"><a href="{{settings.sm_facebook_link}}"><i class="fa fa-facebook fa-2x"></i></a></li>
+									{% endif %}
+
+									{% if settings.sm_twitter_link != blank %}
+										<li id="sm-twitter"><a href="{{settings.sm_twitter_link}}"><i class="fa fa-twitter fa-2x"></i></a></li>
+									{% endif %}
+
+									{% if settings.sm_youtube_link != blank %}
+										<li id="sm-youtube"><a href="{{settings.sm_youtube_link}}"><i class="fa fa-youtube fa-2x"></i></a></li>
+									{% endif %}
+
+									{% if settings.sm_flickr_link != blank %}
+										<li id="sm-flickr"><a href="{{settings.sm_flickr_link}}"><i class="fa fa-flickr fa-2x"></i></a></li>
+									{% endif %}
+
+									{% if settings.sm_pinterest_link != blank %}
+										<li id="sm-pinterest"><a href="{{settings.sm_pinterest_link}}"><i class="fa fa-pinterest fa-2x"></i></a></li>
+									{% endif %}
+
+									{% if settings.sm_instagram_link != blank %}
+										<li id="sm-instagram"><a href="{{settings.sm_instagram_link}}"><i class="fa fa-instagram fa-2x"></i></a></li>
+									{% endif %}
+
+									{% if settings.sm_google_plus_link != blank %}
+										<li id="sm-google-plus"><a href="{{settings.sm_google_plus_link}}"><i class="fa fa-google-plus fa-2x"></i></a></li>
+									{% endif %}
+
+									{% if settings.sm_snapchat_link != blank %}
+										<li id="sm-snapchat"><a href="{{settings.sm_snapchat_link}}"><i class="fa fa-snapchat fa-2x"></i></a></li>
+									{% endif %}
+
+									{% if settings.sm_tumblr_link != blank %}
+										<li id="sm-tumblr"><a href="{{settings.sm_tumblr_link}}"><i class="fa fa-tumblr fa-2x"></i></a></li>
+									{% endif %}
+
+								</ul>
+							</div>
+						</div>
+
+					{% when 'content' %}
+
+						<div class="{{ footer_item_width }}">
+							<h3>{{ 'layout.footer.accepted_payments' | t }}</h3>
+							{% unless shop.enabled_payment_types == empty %}
+								<div id="footer-payment-methods">
+									{% for type in shop.enabled_payment_types %}
+									  <img src="{{ type | payment_type_img_url }}" />
+									{% endfor %}
+
+								</div>
+							{% endunless %}
+						</div>
+
+				{% endcase %}
+
+			{% endfor %}
+
+		</div>
+	</div>
+
+	<div class="bottom-footer">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-6">
+					<p class="credits">
+          &copy; {{ "now" | date: "%Y" }} 
+          {% if section.settings.shop_name != blank %}
+          <a href="/">{{ section.settings.shop_name }}</a>
+          {% else %}
+           {{ shop.name | link_to: '/' }}
+          {% endif %}
+        </p>
+				</div>
+
+				{% if section.settings.show_methods_of_payment %}
+				    {% unless shop.enabled_payment_types == empty %}
+				    	<div class="col-md-6">
+				        {% assign payment_icons_available = 'amazon_payments,american_express,apple_pay,bitcoin,cirrus,dankort,diners_club,discover,dogecoin,dwolla,forbrugsforeningen,interac,jcb,litecoin,maestro,master,paypal,visa' | split: ',' %}
+					        <div id="footer-payment-methods">
+					          {% for type in shop.enabled_payment_types %}
+					            {% if payment_icons_available contains type %}
+					              <img src="{{ type | payment_type_img_url }}" />
+					            {% endif %}
+					          {% endfor %}
+					        </div>
+				        </div>
+				    {% endunless %}
+				  {% endif %}
+
+	</div>
+
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_methods_of_payment",
+      "label": "Payment icons",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text",
+      "name": "Text",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Contact us"
+        },
+        {
+          "type": "richtext",
+          "id": "richtext",
+          "label": "Text",
+					"default": "<p>Share store details, promotions, or brand content with your customers.</p>"
+        }
+      ]
+    },
+    {
+      "type": "menu",
+      "name": "Menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_title",
+          "label": "Heading",
+          "default": "Links"
+        },
+        {
+          "type": "link_list",
+          "id": "footer_linklist",
+          "label": "Menu",
+          "default": "main-menu"
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter",
+	  	"limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "footer_newsletter_description",
+          "label": "Newsletter description"
+        }
+      ]
+    },
+    {
+      "type": "social",
+      "name": "Social icons",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Edit your social settings and accounts in General settings"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

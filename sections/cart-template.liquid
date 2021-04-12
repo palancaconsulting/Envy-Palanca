@@ -1,0 +1,120 @@
+
+
+<div class="title-bar custom-font">
+	<h2>{{ 'cart.general.title' | t }}</h2>
+	<div class="clear"></div>
+</div>
+
+{% if cart.item_count == 0 %}
+	<h3 class="empty-cart">{{ 'cart.general.empty' | t }}, <a href="/collections/all">{{ 'cart.general.continue_browsing_html' | t }}</a></h3>
+{% else %}
+
+	 <form action="/cart" method="post" novalidate class="cart table-wrap" id="cartform">
+	    <table class="cart-table full table--responsive" border="0" cellspacing="0" cellpadding="0" class="hidden-xs">
+	      <thead class="cart__row cart__header-labels">
+			<th colspan="2"></th>
+			<th>{{ 'cart.general.price' | t }}</th>
+			<th>{{ 'cart.general.quantity' | t }}</th>
+			<th>{{ 'cart.general.total' | t }}</th>
+			<th></th>
+	      </thead>
+
+	      <tbody>
+{% for item in cart.items %}
+	<tr class="{% cycle 'even', 'odd' %}">
+		<td class="cart-table-image col-md-2">
+			<a class="cart_thumb" href="{{item.product.url}}" title="View {{item.title}} Page">
+				<img src="{{ item | img_url: 'small' }}" alt="{{ item.title | escape }}" />
+			</a>
+		</td>
+		<td class="cart-table-title col-md-3 col-xs-12">
+			<a href="{{item.url}}" title="View {{item.title | escape }}">{{ item.title }}</a>
+
+			{% assign property_size = item.properties | size %}
+			              {% if property_size > 0 %}
+			              <br />
+			                {% for p in item.properties %}
+			                  {% unless p.last == blank %}
+			                    {{ p.first }}:
+
+			                    {% comment %}
+			                      Check if there was an uploaded file associated
+			                    {% endcomment %}
+			                    {% if p.last contains '/uploads/' %}
+			                      <a href="{{ p.last }}">{{ p.last | split: '/' | last }}</a>
+			                    {% else %}
+			                      {{ p.last }}
+			                    {% endif %}
+
+			                    <br>
+			                  {% endunless %}
+			                {% endfor %}
+			              {% endif %}
+
+		</td>
+		<td class="cart-table-price col-md-2">
+			<span class="money">{{ item.price | money }}</span>
+		</td>
+		<td class="cart-table-quantity col-md-2">
+			<input class="number" type="number" size="4" name="updates[{{item.variant.id}}]" id="updates_{{item.variant.id}}" value="{{item.quantity}}"/>
+		</td>
+		<td class="cart-table-line-price col-md-2">
+			<span class="money">{{item.line_price | money }}</span>
+		</td>
+		<td class="cart-table-delete-button col-md-1">
+			<a class="delete-button" href="/cart/change?line={{ forloop.index }}&amp;quantity=0">&nbsp;</a>
+		</td>
+	</tr>
+{% endfor %}
+	      </tbody>
+	    </table>
+
+
+<div class="cart-bottom-box">
+	<div class="title-bar custom-font">
+		<div id="cart-total-final-price">
+			<span class="money">{{ cart.total_price | money }}</span>
+		</div>
+		<div id="cart-total-header">{{ 'cart.general.total' | t }}</div>
+		<div class="clear"></div>
+	</div>
+
+<div class="row">
+
+  <div id="checkout-add-note" class="col-md-6">
+{% if section.settings.allow_note %}
+    <p>{{ 'cart.general.note' | t }}&hellip;</p>
+    <textarea id="note" name="note" class="form-control">{{ cart.note }}</textarea>
+  {% endif %}
+&nbsp;
+  </div>
+
+	<div id="checkout-buttons" class="col-md-6">
+		<input id="update_quantities" type="submit" value="{{ 'cart.general.update' | t }}" title="{{ 'cart.general.update' | t }}" name="update" class="btn btn-default custom-font" />
+		<input id="cart_submit" type="submit" value="{{ 'cart.general.checkout' | t }}" name="checkout" class="btn btn-success custom-font" />
+		{% if additional_checkout_buttons %}
+		<div id="additional-checkout-buttons">
+		 {{ content_for_additional_checkout_buttons }}
+		</div>
+		{% endif %}
+	</div>
+</div>
+</div>
+	  </form>
+
+
+{% endif %}
+
+{% schema %}
+{
+  "name": "Cart page",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "allow_note",
+      "label": "Enable cart notes",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

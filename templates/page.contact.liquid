@@ -1,0 +1,51 @@
+<div id="col-main" class="content">
+
+
+<div class="title-bar custom-font">
+	<h2>{{ page.title }}</h2> 
+	<div class="clear"></div>
+</div>
+
+<div class="row">
+
+	<div class="col-lg-6">
+  {% form 'contact' %}
+  
+    {% if form.posted_successfully? %}
+      <p class="success-msg">{{ 'contact.form.post_success' | t }}</p>
+    {% endif %}
+
+    {% include 'form-errors-custom' %} 
+    
+    <div id="contact-form">
+    
+      <div class="form-group">
+        <label for="name">{{ 'contact.form.name' | t }}</label>
+        <input type="text" id="name" class="form-control" name="contact[name]" />
+      </div>
+      
+      <div class="form-group">
+        <label for="email">{{ 'contact.form.email' | t }}</label>
+        <input type="email" id="email" class="form-control" class="email" name="contact[email]" />
+      </div>
+      
+      <div class="form-group">
+        <label for="message">{{ 'contact.form.message' | t }}</label>
+        <textarea id="message" class="form-control" name="contact[body]"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <input type="submit" class="btn btn-default" value="{{ 'contact.form.send' | t }}" />
+      </div>
+      
+    </div>
+  {% endform %}
+  </div>
+
+<div class="col-lg-6">
+  {{ page.content }}
+</div>
+
+</div>
+
+</div><!-- /#col-main -->

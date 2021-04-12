@@ -1,0 +1,191 @@
+{% if section.settings.slider-width == 'full-width' %}
+<div class="container-fluid homepage-slider-container">
+	<div class="row">
+		<div class="page-width col-md-12">
+{% else %}
+<div class="container">
+	<div class="row">
+		<div class="page-width col-md-12">
+{% endif %}
+
+			{% if section.blocks.size > 0 %}
+
+			<div class="row">
+				<div class="flexslider-container col-md-12">
+					<div class="flexslider flexslider-homepage" data-slider-id="{{ section.id }}" data-slider-slide-time="{{ section.settings.slider-slide-time }}" data-slider-animation="{{ section.settings.slider-animation }}">
+						<ul class="slides" style="width: {{ section.blocks | size | times:100 }}%;">
+							{% assign number_of_slides_float = section.blocks | size | times:1.0 %}
+
+							{% for block in section.blocks %}
+								{%- assign slide_is_link = false -%}
+									{% if block.settings.link != blank %}
+										{%- assign slide_is_link = true -%}
+									{% endif %}
+
+									<li {{ block.shopify_attributes }} data-slide-index="{{ forloop.index0 }}"
+											{% comment %}Show the first slide before the slider is loaded{% endcomment %}
+											style="display: block; float: left; width: {{ 100 | divided_by: number_of_slides_float }}%">
+
+										{% if block.settings.image == blank %}
+											{% capture current %}{% cycle 1, 2 %}{% endcapture %}
+											{{ 'lifestyle-' | append: current | placeholder_svg_tag: 'icon icon--placeholder' }}
+										{% else %}
+											{% if slide_is_link %}
+												<a href="{{ block.settings.link }}" class="slideshow__link">
+											{% endif %}
+												<img src="{{ block.settings.image | img_url: '2048x' }}" />
+
+											{% if slide_is_link %}
+												</a>
+											{% endif %}
+										{% endif %}
+
+										{% if block.settings.title != empty %}
+											{% if slide_is_link %}
+												<div class="slider-caption custom-font"><h4><a href="{{ block.settings.link }}">{{ block.settings.title }}</a></h4></div>
+											{% else %}
+												<div class="slider-caption custom-font"><h4>{{ block.settings.title }}</h4></div>
+											{% endif %}
+										{% endif %}
+
+
+
+									</li>
+
+							{% endfor %}
+
+			        	</ul>
+				    </div>
+				</div>
+			</div>
+
+			{% endif %}
+
+			{% if section.blocks.size == 0 %}
+				<div class="placeholder-noblocks">
+  {{ 'general.onboarding.no_content' | t }}
+</div>
+
+			{% endif %}
+
+		</div>
+	</div>
+</div>
+
+
+
+{% schema %}
+{
+  "name": "Slideshow",
+  "class": "homepage-section--slideshow-wrapper wow fadeIn",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "select",
+      "id": "slider-animation",
+      "label": "Transition effect",
+      "options": [
+        {
+          "value": "slide",
+          "label": "Slide"
+        },
+        {
+          "value": "fade",
+          "label": "Fade"
+        }
+      ],
+      "default": "slide"
+    },
+    {
+      "type": "select",
+      "id": "slider-width",
+      "label": "Width",
+      "options": [
+        {
+          "value": "fixed",
+          "label": "Fixed"
+        },
+        {
+          "value": "full-width",
+          "label": "Full width"
+        }
+      ],
+      "default": "full-width"
+    },
+    {
+      "type": "select",
+      "id": "slider-slide-time",
+      "label": "Rotation interval",
+      "options": [
+        {
+          "value": "0",
+          "label": "No rotation"
+        },
+        {
+          "value": "3000",
+          "label": "3 Seconds"
+        },
+        {
+          "value": "4000",
+          "label": "4 Seconds"
+        },
+        {
+          "value": "5000",
+          "label": "5 Seconds"
+        },
+        {
+          "value": "6000",
+          "label": "6 Seconds"
+        },
+        {
+          "value": "7000",
+          "label": "7 Seconds"
+        },
+        {
+          "value": "8000",
+          "label": "8 Seconds"
+        }
+      ],
+      "default": "4000"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Slide link"
+        }
+      ]
+    }
+  ],
+  "presets": [{
+    "name": "Slideshow",
+    "category": "Image",
+    "settings": {
+      "slider-slide-time": "5000"
+    },
+    "blocks": [
+      {
+        "type": "image"
+      },
+      {
+        "type": "image"
+      }
+    ]
+  }]
+}
+{% endschema %}

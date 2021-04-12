@@ -1,0 +1,62 @@
+<div id="collections-listing">
+
+<div class="title-bar custom-font">
+	<h2>{{ 'collections.general.product_collections' | t }}</h2>
+	<div class="clear"></div>
+</div>
+
+  {% for collection in collections %}
+  {% unless collection.handle == 'frontpage' %}
+	<div class="row">
+    {% capture collection_title %}{{ collection.title | escape }}{% endcapture %}
+
+	<div class="col-md-12">
+   		<h3 class="custom-font">
+			{{ collection.title }}
+		</h3>
+		<p class="collection-listing-link">
+			<a href="{{ collection.url }}" title="{{ 'collections.general.link_title' | t: title: collection_title }}" class="all-collections-title">
+				{{ 'collections.general.items_with_count' | t: count: collection.all_products_count }} <i class="fa fa-chevron-circle-right"></i>
+			</a>
+		</p>
+	</div>
+	
+	    <ul class="product-grid clearfix">
+	    {% for product in collection.products limit:4 %}
+			<li class="col-md-3 col-sm-3">
+	  			<div class="indiv-product">
+	
+					<a href="{{ product.url | within: collection }}" title="{{product.title}}">
+						<img src="{{ product.featured_image | product_img_url: 'large' }}'" alt="{{product.title}}" class="animated fadeIn" id="collection-image-anim">
+					</a>
+			   		<div class="hp-title">
+						<a href="{{ product.url | within: collection }}">
+						<div class="indiv-product-title-text">{{product.title}}</div>
+						
+						{% if product.compare_at_price_max > product.price %}
+							<div class="sale-badge">{{ 'products.general.sale' | t }}</div>
+						{% endif %}
+						
+							<span class="money-styling custom-font">
+							{% if product.compare_at_price_max > product.price %}
+								<h5 class="custom-font compare-at-price"><span class="money">{{ product.compare_at_price_max | money }}</span></h5>
+							{% endif %}
+						  {% if product.price_varies %}
+						    <small>{{ 'products.general.from' | t }}</small> <span class="money">{{ product.price_min | money }}</span>
+						  {% else %}
+						    <span class="money">{{ product.price_min | money }}</span>
+						  {% endif %}
+						</span>
+						</a>
+					</div>
+					
+				</div>
+			</li>
+	    {% endfor %}
+	    </ul>
+
+
+    </div>
+  {% endunless %}
+  {% endfor %}
+</div><!-- end of #collection-listing -->
